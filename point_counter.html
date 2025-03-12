@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <title>AutoPresence - Navbar</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/js/all.min.js" crossorigin="anonymous"></script>
+    <style>
+        * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+}
+
+body {
+    background: #fff;
+    text-align: center;
+}
+
+/* Header Animation */
+@keyframes slideDown {
+    from { transform: translateY(-50px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+.header {
+    position: relative;
+    background: -webkit-linear-gradient(left, #003366, #004080, #0059b3, #0073e6);
+    padding: 15px 0;
+    font-size: 24px;
+    font-weight: 600;
+    -webkit-background-clip: text;
+    color: transparent;
+    box-shadow: 0 5px 10px rgba(0,0,0,0.2);
+    animation: slideDown 1s ease-in-out forwards;
+}
+      .header-buttons, .header-buttons-right {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    gap: 15px;
+}
+.header-buttons { left: 10px; }
+.header-buttons-right { right: 10px; }
+
+.header-buttons button, .header-buttons-right button {
+    background: #002F6C;
+    border: none;
+    color: white;
+    font-size: 26px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+}
+.header-buttons button:hover, .header-buttons-right button:hover {
+    background: #004080;
+}
+@keyframes fadeInLeft {
+    from { opacity: 0; transform: translateX(-30px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+.greeting {
+    text-align: left;
+    font-size: 35px;
+    font-weight: 700;
+    color: #002244;
+    margin-bottom: 20px;
+    opacity: 0;
+    animation: fadeInLeft 1s ease-in-out forwards;
+}
+.nav-links {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    width: 100%;
+    background: -webkit-linear-gradient(left, #003366, #004080, #0059b3, #0073e6);
+    padding: 20px 0;
+    box-shadow: 0 5px 10px rgba(0,0,0,0.2);
+    animation: fadeInNav 1s ease-in-out forwards;
+}
+.nav-links li {
+    list-style: none;
+}
+.nav-links li a {
+    position: relative;
+    color: #fff;
+    font-size: 20px;
+    font-weight: 500;
+    padding: 6px 15px;
+    text-decoration: none;
+}
+@keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .content-wrapper {
+            padding: 40px;
+            background:#fff;
+            animation: fadeIn 1s ease-in-out;
+        }
+
+        .section {
+            margin: 20px auto;
+            padding: 20px;
+            max-width: 800px;
+            background: #e6f2ff;
+            border-radius: 10px;
+            box-shadow: 0 5px 10px rgba(0,0,0,0.2);
+        }
+
+        .section h2 {
+            color: #002244;
+            margin-bottom: 15px;
+        }
+
+        .section p {
+            font-size: 18px;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-buttons">
+            <button onclick="location.href='dashboard.html'"><i class="fas fa-home"></i></button>
+        </div>
+        <div class="header-buttons-right">
+            <button onclick="location.href='FirstPage.html'"><i class="fas fa-sign-out-alt"></i></button>
+        </div>
+        Welcome to AutoPresence
+    </div>
+    <ul class="nav-links">
+        <li><a href="working.html">Working</a></li>
+        <li class="center"><a href="steps.html">Steps To Follow</a></li>
+        <li class="upward"><a href="point_counter.html">Points and Status Counter</a></li>
+        <li class="forward"><a href="leave_management.html">Leave Management</a></li>
+    </ul>
+    <div class="container">
+        <div class="text-container">
+            
+            <script>
+                if (storedUser && storedUser.name) {
+               document.getElementById("display-username").textContent = storedUser.name; 
+           }
+           </script>
+           <div class="content-wrapper">
+            <div class="section">
+                <h2>How the Points System Works</h2>
+                <p>AutoPresence assigns points based on attendance. Each successful attendance check-in grants points, while absences may deduct points. The more consistent you are, the higher your score!</p>
+            </div>
+            <div class="section">
+                <h2>Status Levels</h2>
+                <p>Students are assigned different status levels based on their attendance points:</p>
+                <ul>
+                    <li><strong>Excellent</strong> - 90%+ attendance</li>
+                    <li><strong>Good</strong> - 75-89% attendance</li>
+                    <li><strong>Needs Improvement</strong> - Below 75%</li>
+                </ul>
+            </div>
+            <div class="section">
+                <h2>Benefits of High Attendance</h2>
+                <p>Maintaining a high attendance rate can earn you rewards, certificates, and even special privileges within the college!</p>
+            </div>
+        </div>
+        </body>
+        </html>

@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>AutoPresence - Leave Request</title>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <style>
+        * { font-family: 'Poppins', sans-serif; }
+        body { text-align: center; }
+        h2 { background: -webkit-linear-gradient(left, #003366, #004080, #0059b3, #0073e6); -webkit-background-clip: text; color: transparent; }
+        form { max-width: 400px; margin: auto; display: flex; flex-direction: column; }
+        .form-group { margin-top: 10px; text-align: left; }
+        button { background: #0073e6; color: white; padding: 10px; border: none; margin-top: 10px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h2>Apply for Leave</h2>
+    <form id="leave-form">
+        <div class="form-group">
+            <label for="from-email">Your Email:</label>
+            <input type="email" id="from-email" required placeholder="Enter your email">
+        </div>
+        <div class="form-group">
+            <label for="to-email">Send Request To (Recipient Email):</label>
+            <input type="email" id="to-email" required placeholder="Enter recipient email">
+        </div>
+        <div class="form-group">
+            <label for="leave-type">Leave Type:</label>
+            <select id="leave-type" required>
+                <option value="personal">Personal</option>
+                <option value="medical">Medical</option>
+                <option value="emergency">Emergency</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="start-date">Start Date:</label>
+            <input type="date" id="start-date" required>
+        </div>
+        <div class="form-group">
+            <label for="end-date">End Date:</label>
+            <input type="date" id="end-date" required>
+        </div>
+        <div class="form-group">
+            <label for="reason">Reason:</label>
+            <textarea id="reason" required></textarea>
+        </div>
+        <button type="submit">Submit Leave Request</button>
+    </form>
+
+    <h2>Pending Leave Requests</h2>
+    <div id="leave-requests"></div>
+
+    <script>
+        // ✅ Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyCGiBeeTdmkRvjSXnjrmZp091w055lThMI",
+            authDomain: "autopresence-b9594.firebaseapp.com",
+            projectId: "autopresence-b9594",
+            storageBucket: "autopresence-b9594.firebasestorage.app",
+            messagingSenderId: "139292140260",
+            appId: "1:139292140260:web:664258705e59f7ce7782f1"
+          };
+
+        // ✅ Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        var db = firebase.firestore();
+
+        // ✅ Submit Leave Request
+        document.getElementById("leave-form").addEventListener("submit", function (e) {
+            e.preventDefault();
+
+            // Get user input
+            var fromEmail = document.getElementById("from-email").value;
+            var toEmail = document.getElementById("to-email").value;
+            var leaveType = document.getElementById("leave-type").value;
+            var startDate = document.getElementById("start-date").value;
+            var endDate = document.getElementById("end-date").value;
+            var reason = document.getElementById("reason").value;
+
+            // Store leave request in Firestore
+            db.collection("leave_requests").add({
+                fromEmail,
+                toEmail,
+                leaveType,
+                startDate,
+                endDate,
+                reason,
+                status: "Pending",
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            })
+            .then(() => {
+                alert("Leave request submitted!");
+                document.getElementById("leave-form").reset();
+            })
+            .catch(error => {
+                console.error("Error submitting leave request:", error);
+                alert("Error submitting leave request: " + error.message);
+            });
+        });
+
+        // ✅ Fetch Leave Requests for Approval (For Teachers)
+        function loadLeaveRequests() {
+            db.collection("leave_requests").where("status", "==", "Pending")
+            .onSnapshot(function(snapshot) {
+                var leaveRequestsDiv = document.getElementById("leave-requests");
+                leaveRequestsDiv.innerHTML = ""; // Clear previous content
+
+                snapshot.forEach(function(doc) {
+                    var data = doc.data();
+                    var requestElement = document.createElement("div");
+                    requestElement.innerHTML = `
+                        <p><strong>From:</strong> ${data.fromEmail}</p>
+                        <p><strong>To:</strong> ${data.toEmail}</p>
+                        <p><strong>Leave Type:</strong> ${data.leaveType}</p>
+                        <p><strong>Dates:</strong> ${data.startDate} to ${data.endDate}</p>
+                        <p><strong>Reason:</strong> ${data.reason}</p>
+                        <button onclick="updateLeaveStatus('${doc.id}', 'Approved')">Approve</button>
+                        <button onclick="updateLeaveStatus('${doc.id}', 'Rejected')">Reject</button>
+                        <hr>
+                    `;
+                    leaveRequestsDiv.appendChild(requestElement);
+                });
+            });
+        }
+
+        function updateLeaveStatus(docId, status) {
+            db.collection("leave_requests").doc(docId).update({ status: status })
+            .then(() => {
+                alert("Leave request " + status);
+            })
+            .catch(error => {
+                console.error("Error updating leave status:", error);
+            });
+        }
+
+        loadLeaveRequests();
+    </script>
+</body>
+</html>
