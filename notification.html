@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firestore Fetch</title>
+</head>
+<body>
+
+    <h2>User Data</h2>
+    <button onclick="fetchUserData()">Get User Data</button>
+    <p id="output"></p>
+
+    <script type="module">
+        // ✅ Import Firebase SDK (v9+)
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+
+        // ✅ Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyCGiBeeTdmkRvjSXnjrmZp091w055lThMI",
+            authDomain: "autopresence-b9594.firebaseapp.com",
+            projectId: "autopresence-b9594",
+            storageBucket: "autopresence-b9594.firebasestorage.app",
+            messagingSenderId: "139292140260",
+            appId: "1:139292140260:web:664258705e59f7ce7782f1"
+          };
+
+        // ✅ Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // ✅ Fetch user data from Firestore
+        window.fetchUserData = async function () {
+            const userRef = doc(db, "users", "Mani"); // Get "Mani" document
+            const userSnap = await getDoc(userRef);
+
+            if (userSnap.exists()) {
+                document.getElementById("output").innerText = `Email: ${userSnap.data().email}, Role: ${userSnap.data().role}`;
+            } else {
+                document.getElementById("output").innerText = "User not found!";
+            }
+        };
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leave History</title>
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap">
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/js/all.min.js"
+        crossorigin="anonymous"></script>
+    <style>
+        /* General Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background: #fff;
+            text-align: center;
+            animation: fadeIn 1.5s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        .header {
+            background: -webkit-linear-gradient(left, #003366, #004080, #0059b3, #0073e6);
+            padding: 15px 0;
+            font-size: 24px;
+            font-weight: 600;
+            -webkit-background-clip: text;
+            color: transparent;
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+            position: relative;
+            animation: slideDown 1s ease-in-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        .header-buttons, .header-buttons-right {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            gap: 15px;
+        }
+        .header-buttons { left: 10px; }
+        .header-buttons-right { right: 10px; }
+
+        .header-buttons button, .header-buttons-right button {
+            background: #002F6C;
+            border: none;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            padding: 10px 15px;
+            border-radius: 10px;
+        }
+        .header-buttons button:hover, .header-buttons-right button:hover {
+            background: #004080;
+        }
+
+.nav-links {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            width: 100%;
+            background: -webkit-linear-gradient(left, #003366, #004080, #0059b3, #0073e6);
+            padding: 20px 0;
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+            animation: fadeIn 1.5s ease-in-out;
+        }
+
+        .nav-links li {
+            list-style: none;
+        }
+
+        .nav-links li a {
+            position: relative;
+            color: #fff;
+            font-size: 20px;
+            font-weight: 500;
+            padding: 6px 15px;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .nav-links li a:before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 3px;
+            width: 0%;
+            background: #fff;
+            border-radius: 12px;
+            transition: all 0.4s ease;
+        }
+
+        .nav-links li a:hover:before {
+            width: 100%;
+        }
+
+        .container {
+            width: 80%;
+            margin: 20px auto;
+            padding: 20px;
+            background: #cce7ff;
+            box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+        }
+
+        h2 {
+            text-align: center;
+            color: #333;
+            font-size: 24px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #0059b3;
+            color: white;
+            font-weight: bold;
+        }
+
+        tr:nth-child(even),
+        tr:nth-child(odd) {
+            background-color: #fff;
+        }
+
+        tr:hover {
+            background-color: #c0c0c0;
+        }
+
+        .status-approved {
+            color: green;
+            font-weight: bold;
+        }
+
+        .status-pending {
+            color: orange;
+            font-weight: bold;
+        }
+
+        .status-rejected {
+            color: red;
+            font-weight: bold;
+        }
+
+        .approve-btn {
+            background-color: green;
+            color: white;
+            padding: 5px 10px;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        .reject-btn {
+            background-color: red;
+            color: white;
+            padding: 5px 10px;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        .approve-btn:hover {
+            background-color: darkgreen;
+        }
+
+        .reject-btn:hover {
+            background-color: darkred;
+        }
+    </style>
+</head>
+
+<body>
+
+    
+    <div class="header">
+        <div class="header-buttons">
+            <button onclick="location.href='teacher_dashboard.html'">Home</button>
+            <button onclick="location.href='Monday_lab.html'">Lab Attendance</button>
+        </div>
+        <div class="header-buttons-right">
+            <button onclick="location.href='teacher_leave_history.html'">Leave History</button>
+            <button onclick="location.href='FirstPage.html'">Logout</button>
+        </div>
+        Welcome to AutoPresence
+    </div> 
+
+    <ul class="nav-links">
+        <li><a href="Monday_lecture.html" class="day-link">Monday</a></li>
+        <li><a href="Tuesday_lecture.html" class="day-link">Tuesday</a></li>
+        <li><a href="Wednesday_lecture.html" class="day-link active">Wednesday</a></li>
+        <li><a href="Thursday_lecture.html" class="day-link">Thursday</a></li>
+        <li><a href="Friday_lecture.html" class="day-link">Friday</a></li>
+        <li><a href="Saturday_lecture.html" class="day-link">Saturday</a></li>
+    </ul>
+
+    <main>
+        <div class="container">
+            <h2>Leave History</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Leave Type</th>
+                        <th>Start Date</th>
+                        <th>End Date</th>
+                        <th>Reason</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="leave-history-table">
+                    <!-- Dynamic data from Firebase will be inserted here -->
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyCGiBeeTdmkRvjSXnjrmZp091w055lThMI",
+            authDomain: "autopresence-b9594.firebaseapp.com",
+            projectId: "autopresence-b9594",
+            storageBucket: "autopresence-b9594.firebasestorage.app",
+            messagingSenderId: "139292140260",
+            appId: "1:139292140260:web:664258705e59f7ce7782f1"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        function loadLeaveRequests() {
+            db.collection("leaveRequests").get()
+                .then((querySnapshot) => {
+                    let tableBody = document.getElementById("leave-history-table");
+                    tableBody.innerHTML = "";
+
+                    querySnapshot.forEach((doc) => {
+                        let data = doc.data();
+                        let statusClass = data.status.toLowerCase();
+
+                        let actionButtons = data.status === "Pending" ?
+                            `<button class="approve-btn" onclick="updateLeaveStatus('${doc.id}', 'Approved')">Approve</button>
+                             <button class="reject-btn" onclick="updateLeaveStatus('${doc.id}', 'Rejected')">Reject</button>`
+                            : `<span class="status-${statusClass}">${data.status}</span>`;
+
+                        let row = `
+                            <tr>
+                                <td>${data.leaveType || "N/A"}</td>
+                                <td>${data.startDate || "N/A"}</td>
+                                <td>${data.endDate || "N/A"}</td>
+                                <td>${data.reason || "No reason provided"}</td>
+                                <td class="status-${statusClass}" id="status-${doc.id}">${data.status}</td>
+                                <td id="action-${doc.id}">${actionButtons}</td>
+                            </tr>
+                        `;
+                        tableBody.innerHTML += row;
+                    });
+                });
+        }
+
+        function updateLeaveStatus(docId, status) {
+            db.collection("leaveRequests").doc(docId).update({ status })
+                .then(() => {
+                    document.getElementById(`status-${docId}`).innerText = status;
+                    document.getElementById(`status-${docId}`).className = `status-${status.toLowerCase()}`;
+                    document.getElementById(`action-${docId}`).innerHTML = `<span class="status-${status.toLowerCase()}">${status}</span>`;
+                    alert(`Leave request ${status}`);
+                })
+                .catch(error => {
+                    console.error("Error updating status:", error);
+                });
+        }
+
+        window.onload = loadLeaveRequests;
+    </script>
+</body>
+</html>

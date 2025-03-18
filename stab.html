@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <title>AutoPresence - Navbar</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/js/all.min.js" crossorigin="anonymous"></script>
+    <style>
+        * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+}
+
+body {
+    background: #fff;
+    text-align: center;
+}
+
+/* Header Animation */
+@keyframes slideDown {
+    from { transform: translateY(-50px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+.header {
+    position: relative;
+    background: -webkit-linear-gradient(left, #003366, #004080, #0059b3, #0073e6);
+    padding: 15px 0;
+    font-size: 24px;
+    font-weight: 600;
+    -webkit-background-clip: text;
+    color: transparent;
+    box-shadow: 0 5px 10px rgba(0,0,0,0.2);
+    animation: slideDown 1s ease-in-out forwards;
+}
+.header-buttons, .header-buttons-right {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            gap: 15px;
+        }
+        .header-buttons { left: 10px; }
+        .header-buttons-right { right: 10px; }
+
+        .header-buttons button, .header-buttons-right button {
+            background: #002F6C;
+            border: none;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            padding: 10px 15px;
+            border-radius: 10px;
+        }
+        .header-buttons button:hover, .header-buttons-right button:hover {
+            background: #004080;
+        }
+     
+
+/* Greeting Animation */
+@keyframes fadeInLeft {
+    from { opacity: 0; transform: translateX(-30px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+.greeting {
+    text-align: left;
+    font-size: 35px;
+    font-weight: 700;
+    color: #002244;
+    margin-bottom: 20px;
+    opacity: 0;
+    animation: fadeInLeft 1s ease-in-out forwards;
+}
+
+/* Content Section */
+.container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    max-width: 1200px;
+    margin: 50px auto;
+    padding: 20px;
+}
+
+.text-container {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.text-content {
+    flex: 1;
+    text-align: left;
+    max-width: 550px;
+    background: rgba(0, 115, 230, 0.1);
+    padding: 20px;
+    border-radius: 10px;
+    margin-right: 30px;
+    opacity: 0;
+    animation: fadeInText 1s ease-in-out forwards;
+}
+@keyframes fadeInText {
+    from { opacity: 0; transform: translateX(-30px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+.text-content h1 {
+    font-size: 48px;
+    font-weight: 700;
+    color: #002244;
+}
+.text-content p {
+    font-size: 20px;
+    color: #333;
+    margin-top: 10px;
+}
+
+.image-content {
+    flex: 1;
+    text-align: right;
+    opacity: 0;
+    animation: slideUpImage 1s ease-in-out forwards;
+}
+@keyframes slideUpImage {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.image-content img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 10px;
+}
+      @keyframes fadeInNav {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeInNav {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.nav-links {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            width: 100%;
+            background: -webkit-linear-gradient(left, #003366, #004080, #0059b3, #0073e6);
+            padding: 20px 0;
+            box-shadow: 0 5px 10px rgba(0,0,0,0.2);
+            animation: fadeInUp 1s ease-out;
+        }
+
+        .nav-links li {
+            list-style: none;
+        }
+        .nav-links li a {
+            position: relative;
+            color: #fff;
+            font-size: 20px;
+            font-weight: 500;
+            padding: 6px 15px;
+            text-decoration: none;
+        }
+        .nav-links li a:before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 3px;
+            width: 0%;
+            background: #fff;
+            border-radius: 12px;
+            transition: all 0.4s ease;
+        }
+        .nav-links li a:hover:before {
+            width: 100%;
+        }
+        .nav-links li.center a:before {
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        .nav-links li.upward a:before {
+            width: 100%;
+            bottom: -5px;
+            opacity: 0;
+        }
+        .nav-links li.upward a:hover:before {
+            bottom: 0px;
+            opacity: 1;
+        }
+        .nav-links li.forward a:before {
+            width: 100%;
+            transform: scaleX(0);
+            transform-origin: right;
+            transition: transform 0.4s ease;
+        }
+        .nav-links li.forward a:hover:before {
+            transform: scaleX(1);
+            transform-origin: left;
+        }
+
+</style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-buttons">
+            <button onclick="location.href='stab.html'">Home</button>
+            <button onclick="location.href='Monday_lab.html'">Lab Attendance</button>
+        </div>
+        <div class="header-buttons-right">
+            <button onclick="location.href='teacher_leave_history.html'">Leave History</button>
+            <button onclick="location.href='FirstPage.html'">Logout</button>
+        </div>
+        Welcome to AutoPresence
+    </div>
+    <ul class="nav-links">
+        <li><a href="Monday_lecture.html">Monday</a></li>
+        <li class="center"><a href="Tuesday_lecture.html">Tuesday</a></li>
+        <li class="upward"><a href="Wednesday_lecture.html">Wednesday</a></li>
+        <li class="forward"><a href="Thursdaylecture.html">Thursday</a></li>
+        <li><a href="Friday_lecture.html">Friday</a></li>
+        <li class="center"><a href="Saturday_lecture.html">Saturday</a></li>
+    </ul>
+    <div class="container">
+        <div class="text-container">
+            <div class="greeting">Hi, <span id="display-username">User</span>!</div>
+            <div class="text-content">
+                <h1>Smart Attendance Tracking</h1>
+                <p>AutoPresence is an AI-powered attendance system designed for college students, utilizing face and voice recognition to ensure seamless and accurate attendance tracking.</p>
+            </div>
+        </div>
+        <div class="image-content">
+            <img src="image.webp" alt="Attendance System Illustration">
+        </div>
+    </div>
+    <script>
+        if (storedUser && storedUser.name) {
+       document.getElementById("display-username").textContent = storedUser.name; 
+   }
+   </script>
+</body>
+</html>

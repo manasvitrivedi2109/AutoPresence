@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Colorful Two-Button Page</title>
+    <style>
+        /* General Page Styles */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background:-webkit-linear-gradient(left, #003366,#004080,#0059b3
+            , #0073e6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: white;
+        }
+
+        /* Centered Container */
+        .container {
+            text-align: center;
+            background: white;
+            border-radius: 15px;
+            padding: 3rem;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            width: 500px;
+            animation: fadeIn 1.2s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .container h1 {
+            background:-webkit-linear-gradient(left, #003366,#004080,#0059b3
+            , #0073e6);
+            -webkit-background-clip: text;
+            color: transparent;
+            margin-bottom: 2rem;
+        }
+
+        .container p {
+            color: #666;
+            margin-bottom: 2rem;
+        }
+
+        /* Button Styles */
+        .button {
+            background:-webkit-linear-gradient(left, #003366,#004080,#0059b3
+            , #0073e6);
+            color: white;
+            font-size: 1.2rem;
+            border: none;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 10px 0;
+            cursor: pointer;
+            width: 100%;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+        }
+
+        .button:hover {
+            transform: scale(1.05);
+            opacity: 0.9;
+        }
+        
+    </style>
+    <script>
+        function openNewPage() {
+            //window.open("main_login_page.html", "_blank")
+             // Opens newpage.html in a new tab
+             window.location.href = "main_login_page.html";
+        }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <!-- <button onclick="openNewPage()">Open New Page</button> -->
+        <h1>Welcome to AutoPresence</h1>
+        <p>Choose an option to proceed.</p>
+        <button class="button" id="loginButton" onclick="openNewPage()">Login as a Student</button>
+        <button class="button" onclick="openNewPage()">Login as a Teacher</button>
+    </div>
+</body>
+</html>

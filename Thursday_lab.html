@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lab Attendance Checker</title>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+        body { background: #fff; text-align: center; }
+
+        .header {
+            position: relative;
+            background: -webkit-linear-gradient(left, #003366, #004080, #0059b3, #0073e6);
+            padding: 15px 0;
+            font-size: 24px;
+            font-weight: 600;
+            -webkit-background-clip: text;
+            color: transparent;
+            box-shadow: 0 5px 10px rgba(0,0,0,0.2);
+            animation: slideDown 1s ease-in-out forwards;
+        }
+
+        .header-buttons, .header-buttons-right {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            gap: 15px;
+        }
+        .header-buttons { left: 10px; }
+        .header-buttons-right { right: 10px; }
+
+        .header-buttons button, .header-buttons-right button {
+            background: #002F6C;
+            border: none;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            padding: 10px 15px;
+            border-radius: 10px;
+        }
+        .header-buttons button:hover, .header-buttons-right button:hover {
+            background: #004080;
+        }
+
+        .subject-container { margin: 20px; }
+        select {
+            padding: 10px;
+            font-size: 18px;
+            border: 2px solid #004080;
+            border-radius: 5px;
+        }
+        .nav-links {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            width: 100%;
+            background: -webkit-linear-gradient(left, #003366, #004080, #0059b3, #0073e6);
+            padding: 20px 0;
+            box-shadow: 0 5px 10px rgba(0,0,0,0.2);
+        }
+        .nav-links li { list-style: none; }
+        .nav-links li a {
+            color: #fff;
+            font-size: 20px;
+            font-weight: 500;
+            padding: 6px 15px;
+            text-decoration: none;
+        }
+        .nav-links li a:hover { text-decoration: underline; }
+
+        table { width: 80%; margin: 20px auto; border-collapse: collapse; box-shadow: 0 5px 10px rgba(0,0,0,0.2); }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: center; }
+        th { background: #004080; color: white; }
+        .present { background: #c8e6c9; color: #2e7d32; }
+        .absent { background: #ffcdd2; color: #c62828; }
+
+        .summary-container {
+            margin-top: 20px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div class="header-buttons">
+            <button onclick="location.href='teacher_dashboard.html'">Home</button>
+            <button onclick="location.href='Monday_lab.html'">Lab Attendance</button>
+        </div>
+        <div class="header-buttons-right">
+            <button onclick="location.href='teacher_leave_history.html'">Leave History</button>
+            <button onclick="location.href='FirstPage.html'">Logout</button>
+        </div>
+        Welcome to AutoPresence
+    </div> 
+
+    <ul class="nav-links">
+        <li><a href="Monday_lab.html" class="day-link">Monday</a></li>
+        <li><a href="Tuesday_lab.html" class="day-link">Tuesday</a></li>
+        <li><a href="Wednesday_lab.html" class="day-link active">Wednesday</a></li>
+        <li><a href="Thursday_lab.html" class="day-link">Thursday</a></li>
+        <li><a href="Friday_lab.html" class="day-link">Friday</a></li>
+        <li><a href="Saturday_lab.html" class="day-link">Saturday</a></li>
+    </ul> 
+
+    <div class="subject-container">
+        <label for="subjectSelect">Select Lab: </label>
+        <select id="subjectSelect" onchange="checkAttendance()">
+            <option value="Mp lab">Microprocessor Lab</option>
+        </select>
+    </div>
+
+    <h2>Lab Attendance</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Student Name</th>
+                <th>Attendance Time</th>
+                <th>Attendance Status</th>
+            </tr>
+        </thead>
+        <tbody id="attendanceTable"></tbody>
+    </table>
+
+    <div class="summary-container">
+        Total Students: <span id="totalStudents">0</span> |
+        Total Present: <span id="totalPresent">0</span>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyCGiBeeTdmkRvjSXnjrmZp091w055lThMI",
+            authDomain: "autopresence-b9594.firebaseapp.com",
+            projectId: "autopresence-b9594",
+            storageBucket: "autopresence-b9594.firebasestorage.app",
+            messagingSenderId: "139292140260",
+            appId: "1:139292140260:web:664258705e59f7ce7782f1"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        const studentsToCheck = ["Manasvi Trivedi","Aayushi Soni","Kaavyaa Sagar","Tisha Raval","Hetvi Suthar","Hitarth Thombare","Maitri Chavan","Anushree Chavda","Rudra Parmar","Diya Mistry","Aniruddh Rathod","Pranjal Rana","Vikas Rajput","Krish Patel","Mann Patel","Himani Prajapati","Karnik Purani","Pari Darji","Tirth Gandhi","Khanak Hathi","Hetanshi Jadhav","Trupti More","Vasu Navadiya","Dhvani Parmar","Aeshaben Patel","Krisha Kharva"];
+
+        function formatTime(firebaseTimestamp) {
+            if (!firebaseTimestamp || !firebaseTimestamp.toDate) return "N/A";
+            const date = firebaseTimestamp.toDate();
+            let hours = date.getHours();
+            let minutes = date.getMinutes();
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12 || 12;
+            minutes = minutes < 10 ? '0' + minutes : minutes;
+            return `${hours}:${minutes} ${ampm}`;
+        }
+
+        function getSelectedDay() {
+            const url = window.location.href;
+            if (url.includes("Monday")) return "Monday";
+            if (url.includes("Tuesday")) return "Tuesday";
+            if (url.includes("Wednesday")) return "Wednesday";
+            if (url.includes("Thursday")) return "Thursday";
+            if (url.includes("Friday")) return "Friday";
+            if (url.includes("Saturday")) return "Saturday";
+            return null;
+        }
+
+        function checkAttendance() {
+            const selectedDay = getSelectedDay();
+            if (!selectedDay) {
+                console.error("Day selection not found! Ensure the correct URL is used.");
+                return;
+            }
+
+            const selectedLab = document.getElementById("subjectSelect").value;
+            const tableBody = document.getElementById("attendanceTable");
+            tableBody.innerHTML = "";
+
+            db.collection("lab_attendance")
+                .where("lectureName", "==", selectedLab)
+                .where("day", "==", selectedDay)
+                .get()
+                .then(querySnapshot => {
+                    let attendanceRecords = [];
+                    let totalPresent = 0;
+
+                    querySnapshot.forEach(doc => {
+                        attendanceRecords.push(doc.data());
+                    });
+
+                    studentsToCheck.forEach(studentName => {
+                        const studentRecords = attendanceRecords.filter(att => att.studentName === studentName);
+                        studentRecords.sort((a, b) => b.timestamp.seconds - a.timestamp.seconds);
+
+                        const latestRecord = studentRecords.length > 0 ? studentRecords[0] : null;
+                        const isPresent = latestRecord !== null;
+                        if (isPresent) totalPresent++;
+
+                        const row = `<tr>
+                            <td>${studentName}</td>
+                            <td>${isPresent ? formatTime(latestRecord.timestamp) : "N/A"}</td>
+                            <td class="${isPresent ? 'present' : 'absent'}">${isPresent ? 'Present' : 'Absent'}</td>
+                        </tr>`;
+                        tableBody.innerHTML += row;
+                    });
+
+                    document.getElementById("totalStudents").innerText = studentsToCheck.length;
+                    document.getElementById("totalPresent").innerText = totalPresent;
+                })
+                .catch(error => console.error("Error fetching attendance:", error));
+        }
+
+        window.onload = checkAttendance;
+    </script>
+
+</body>
+</html>

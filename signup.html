@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auto Presence</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js" defer></script>
+    <style>
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background: -webkit-linear-gradient(left, #003366, #004080, #0059b3, #0073e6);
+            background-size: 400% 400%;
+            animation: gradientBG 6s ease infinite;
+        }
+        
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        .fade-in {
+            animation: fadeIn 1.5s ease-in-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .card {
+            position: relative;
+            background: white;
+            padding: 60px;
+            border-radius: 16px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            width: 550px;
+        }
+        
+        .top-buttons {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            display: flex;
+            gap: 15px;
+        }
+        
+        .nav-button {
+            background: #002F6C;
+            color: white;
+            padding: 15px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            font-size: 18px;
+        }
+        
+        .nav-button:hover {
+            background: #0057B7;
+        }
+        
+        .title {
+            font-size: 36px;
+            font-family: 'Arial', sans-serif;
+            font-weight: bold;
+            background: -webkit-linear-gradient(left, #003366, #004080, #0059b3, #0073e6);
+            -webkit-background-clip: text;
+            color: transparent;
+            margin-top: 50px;
+        }
+        
+        .description {
+            color: black;
+            margin-bottom: 30px;
+            font-size: 18px;
+        }
+        
+        .upload-button {
+            width: 100%;
+            padding: 16px;
+            margin-top: 15px;
+            background: -webkit-linear-gradient(left, #003366, #004080, #0059b3, #0073e6);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 18px;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+        
+        .upload-button:hover {
+            opacity: 0.9;
+            transform: scale(1.05);
+        }
+
+        .disabled {
+            background: grey;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <!-- Centered Card -->
+    <div class="card fade-in">
+        
+        <!-- Top Navigation inside Card -->
+        <div class="top-buttons">
+            <button class="nav-button" onclick="openDocument('dashboard.html')">
+                <i class="fas fa-chart-line"></i> <!-- Dashboard Icon -->
+            </button>
+            <button class="nav-button" onclick="openDocument('FirstPage.html')">
+                <i class="fas fa-sign-out-alt"></i> <!-- Logout Icon -->
+            </button>
+        </div>
+        
+        <script>
+            function openDocument(target) {
+                window.location.href = target;
+            }
+        </script>
+        
+        <h2 class="title">Auto Presence</h2>
+        <p class="description">Upload your face and voice for attendance.</p>
+        
+        <button id="faceButton" class="upload-button" onclick="markFaceAttendance()">Upload Face</button>
+        <button id="voiceButton" class="upload-button" onclick="markVoiceAttendance()">Upload Voice</button>
+
+        <button id="submitButton" class="upload-button disabled" onclick="submitAttendance()" disabled>Submit Attendance</button>
+    </div>
+    
+    <script>
+        // Function to mark face attendance
+        function markFaceAttendance() {
+            sessionStorage.setItem("faceTick", "marked"); // Mark face attendance
+            document.getElementById("faceButton").classList.add("disabled");
+            checkAllTasksCompleted();
+            openDocument('/models/face_detection.html');
+        }
+
+        // Function to mark voice attendance
+        function markVoiceAttendance() {
+            sessionStorage.setItem("voiceTick", "marked"); // Mark voice attendance
+            document.getElementById("voiceButton").classList.add("disabled");
+            checkAllTasksCompleted();
+            openDocument('voice_attendance.html');
+        }
+
+        // Check if both attendance tasks are completed
+        function checkAllTasksCompleted() {
+            if (sessionStorage.getItem("faceTick") === "marked" && sessionStorage.getItem("voiceTick") === "marked") {
+                document.getElementById("submitButton").disabled = false;
+                document.getElementById("submitButton").classList.remove("disabled");
+            }
+        }
+
+        // Submit the attendance when both tasks are done
+        function submitAttendance() {
+            if (sessionStorage.getItem("faceTick") === "marked" && sessionStorage.getItem("voiceTick") === "marked") {
+                alert("Both face and voice attendance are marked. You may now leave the page.");
+                window.location.href = "/thank-you-page.html"; // Redirect to a "Thank You" page or any other destination
+            } else {
+                alert("Please complete both face and voice attendance before submitting.");
+            }
+        }
+
+        // On page load, check if both attendance tasks are already done
+        window.onload = function() {
+            if (sessionStorage.getItem("faceTick") === "marked") {
+                document.getElementById('faceButton').classList.add("disabled");
+            }
+            if (sessionStorage.getItem("voiceTick") === "marked") {
+                document.getElementById('voiceButton').classList.add("disabled");
+            }
+            checkAllTasksCompleted(); // Enable submit button if both tasks are marked
+        };
+    </script>
+</body>
+</html>

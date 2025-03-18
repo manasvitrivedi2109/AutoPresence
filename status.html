@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AutoPresence - Status</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/js/all.min.js" crossorigin="anonymous"></script>
+    <!-- Firebase SDK -->
+    <script type="module">
+        // Import Firebase modules
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    
+        // Firebase Config
+        const firebaseConfig = {
+            apiKey: "AIzaSyCGiBeeTdmkRvjSXnjrmZp091w055lThMI",
+            authDomain: "autopresence-b9594.firebaseapp.com",
+            projectId: "autopresence-b9594",
+            storageBucket: "autopresence-b9594.firebasestorage.app",
+            messagingSenderId: "139292140260",
+            appId: "1:139292140260:web:664258705e59f7ce7782f1"
+        };
+    
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+    
+        // Mapping stored subject codes to full names
+        const subjectMapping = {
+            "Network Security": "Network Security",
+            "Network Security Lab": "Network Security",
+            "Artificial Intelligence": "Artificial Intelligence",
+            "Artificial Intelligence Lab": "Artificial Intelligence",
+            "Mobile Application Development": "Mobile Application Development",
+            "Mobile Application Development Lab": "Mobile Application Development",
+            "Microprocessor": "Microprocessor",
+            "Microprocessor Lab": "Microprocessor"
+        };
+    
+        async function fetchUserAttendance() {
+            const user = JSON.parse(sessionStorage.getItem("loggedInUser"));
+            if (!user) {
+                document.getElementById("username-display").textContent = "Guest";
+                return;
+            }
+    
+            document.getElementById("username-display").textContent = user.name;
+    
+            const attendanceCollection = collection(db, "attendance");
+            const q = query(attendanceCollection, where("name", "==", user.name));
+            const querySnapshot = await getDocs(q);
+    
+            if (querySnapshot.empty) {
+                console.error("❌ No attendance records found for the user!");
+                return;
+            }
+    
+            // Object to store attendance counts
+            let attendanceCounts = {
+                "Network Security": 0,
+                "Artificial Intelligence": 0,
+                "Mobile Application Development": 0,
+                "Microprocessor": 0
+            };
+    
+            // **Set the total lectures per subject (Change as needed)**
+            let totalLectures = {
+                "Network Security": 10,
+                "Artificial Intelligence": 10,
+                "Mobile Application Development": 10,
+                "Microprocessor": 10
+            };
+    
+            querySnapshot.forEach((doc) => {
+                let data = doc.data();
+                let shortCode = data.attendanceType; // Example: "Microprocessor Lab", "Network Security", etc.
+    
+                let subject = subjectMapping[shortCode]; // Convert to full name
+                if (subject && attendanceCounts[subject] !== undefined) {
+                    attendanceCounts[subject]++; // Increment count
+                }
+            });
+    
+            // Calculate attendance percentages
+            let attendancePercentages = {};
+            for (let subject in attendanceCounts) {
+                attendancePercentages[subject] = Math.round((attendanceCounts[subject] / totalLectures[subject]) * 100);
+            }
+    
+            // Calculate **Overall Attendance** as the **average of all subjects**
+            let overallAttendance = Math.round(
+                (attendancePercentages["Network Security"] +
+                attendancePercentages["Artificial Intelligence"] +
+                attendancePercentages["Mobile Application Development"] +
+                attendancePercentages["Microprocessor"]) / 4
+            );
+    
+            // **Update Charts**
+            updateCharts(overallAttendance, attendancePercentages);
+        }
+    
+        function updateCharts(overall, attendanceData) {
+            // **Chart Colors**
+            const colors = {
+                "Network Security": "#2e7d32",
+                "Artificial Intelligence": "#ff9800",
+                "Mobile Application Development": "#d32f2f",
+                "Microprocessor": "#2e7d32"
+            };
+    
+            // **Create Overall Attendance Chart**
+            createChart("overallAttendanceChart", "overallAttendanceText", overall, "#2e7d32");
+    
+            // **Create Subject-wise Charts**
+            for (let subject in attendanceData) {
+                let canvasId = getCanvasId(subject);
+                let textId = getTextId(subject);
+                let color = colors[subject];
+    
+                createChart(canvasId, textId, attendanceData[subject], color);
+            }
+        }
+    
+        function getCanvasId(subject) {
+            const mapping = {
+                "Network Security": "mathChart",
+                "Artificial Intelligence": "physicsChart",
+                "Mobile Application Development": "chemistryChart",
+                "Microprocessor": "englishChart"
+            };
+            return mapping[subject];
+        }
+    
+        function getTextId(subject) {
+            const mapping = {
+                "Network Security": "mathText",
+                "Artificial Intelligence": "physicsText",
+                "Mobile Application Development": "chemistryText",
+                "Microprocessor": "englishText"
+            };
+            return mapping[subject];
+        }
+    
+        function createChart(canvasId, textId, value, color) {
+            new Chart(document.getElementById(canvasId), {
+                type: 'doughnut',
+                data: {
+                    datasets: [{
+                        data: [value, 100 - value],  // **Always out of 100%**
+                        backgroundColor: [color, '#e0e0e0']
+                    }]
+                },
+                options: {
+                    responsive: false,
+                    cutout: '70%',
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { enabled: false }
+                    }
+                }
+            });
+            document.getElementById(textId).textContent = value + "%";
+        }
+    
+        document.addEventListener("DOMContentLoaded", fetchUserAttendance);
+    </script>
+    
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+        body {
+            background: #fff;
+            text-align: center;
+        }
+        .header {
+            background:  -webkit-linear-gradient(left, #003366, #004080, #0059b3, #0073e6);
+            padding: 15px 0;
+            font-size: 24px;
+            font-weight: 600;
+             background:#fff; 
+             background:  -webkit-linear-gradient(left, #003366, #004080, #0059b3, #0073e6);;
+            -webkit-background-clip: text;  
+            color: transparent;
+            box-shadow: 0 5px 10px rgba(0,0,0,0.2);
+        }
+        .header {
+            position: relative;
+            background: -webkit-linear-gradient(left, #003366, #004080, #0059b3, #0073e6);
+            padding: 15px 0;
+            font-size: 24px;
+            font-weight: 600;
+            -webkit-background-clip: text;
+            color: transparent;
+            box-shadow: 0 5px 10px rgba(0,0,0,0.2);
+        }
+       
+        .header-buttons {
+            position: absolute;
+            top: 50%;
+            left: 10px;
+            transform: translateY(-50%);
+            display: flex;
+            gap: 15px;
+        }
+        .header-buttons-right {
+            position: absolute;
+            top: 50%;
+            right: 10px;
+            transform: translateY(-50%);
+            display: flex;
+            gap: 15px;
+        }
+        .header-buttons button, .header-buttons-right button {
+            background: #0059b3;
+            border: none;
+            color: white;
+            font-size: 26px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px; /* Smooth corners */
+        }
+        .header-buttons button:hover, .header-buttons-right button:hover {
+            background: #004080;
+        }
+        .nav-links {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            width: 100%;
+            background:  -webkit-linear-gradient(left, #003366, #004080, #0059b3, #0073e6);
+            padding: 20px 0;
+            box-shadow: 0 5px 10px rgba(0,0,0,0.2);
+        }
+        .nav-links li {
+            list-style: none;
+        }
+        .nav-links li a {
+            position: relative;
+            color: #fff;
+            font-size: 20px;
+            font-weight: 500;
+            padding: 6px 15px;
+            text-decoration: none;
+        }
+        .nav-links li a:before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 3px;
+            width: 0%;
+            background: #fff;
+            border-radius: 12px;
+            transition: all 0.4s ease;
+        }
+        .nav-links li a:hover:before {
+            width: 100%;
+        }
+        .nav-links li.center a:before {
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        .nav-links li.upward a:before {
+            width: 100%;
+            bottom: -5px;
+            opacity: 0;
+        }
+        .nav-links li.upward a:hover:before {
+            bottom: 0px;
+            opacity: 1;
+        }
+        .nav-links li.forward a:before {
+            width: 100%;
+            transform: scaleX(0);
+            transform-origin: right;
+            transition: transform 0.4s ease;
+        }
+        .nav-links li.forward a:hover:before {
+            transform: scaleX(1);
+            transform-origin: left;
+        }
+        .welcome {
+            font-size: 38px;
+            font-weight: 700;
+            color: #003366;
+            margin-top: 20px;
+        }
+        .date-time {
+            font-size: 26px;
+            color: #0059b3;
+            margin-top: 15px;
+        }
+        .summary {
+            font-size: 28px;
+            font-weight: 600;
+            color: #004080;
+            padding: 20px;
+            background: rgba(0, 115, 230, 0.1);
+            border-radius: 15px;
+            margin-top: 20px;
+            display: inline-block;
+        }
+        .overview {
+            font-size: 22px;
+            color: #333;
+            line-height: 1.8;
+            margin-top: 20px;
+            width: 80%;
+        }
+        .status-container {
+            max-width: 90%;
+            margin: auto;
+            padding: 15px;
+            background: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            margin-top: 20px;
+        }
+        .subjects-wrapper {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: nowrap;
+            padding: 10px;
+        }
+        .subject-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: #f9f9f9;
+            padding: 10px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin: 10px;
+            width: 180px;
+        }
+        .overall-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            width: 250px;
+            margin: auto;
+        }
+        canvas {
+            max-width: 100px;
+            margin: 10px auto;
+        }
+        .percentage {
+            font-size: 16px;
+            font-weight: bold;
+            color: #333;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        .chart-container {
+            position: relative;
+            display: inline-block;
+        }
+        .greeting {
+            text-align: center;
+            font-size: 30px;
+            font-weight: 600;
+            color:#002244;
+            margin: 10px 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-buttons">
+            <button onclick="location.href='dashboard.html'"><i class="fas fa-home"></i></button>
+        </div>
+        <div class="header-buttons-right">
+            <button onclick="location.href='help.html'"><i class="fas fa-question-circle"></i></button>
+            <button onclick="location.href='FirstPage.html'"><i class="fas fa-sign-out-alt"></i></button>
+        </div>
+        Welcome to AutoPresence
+    </div>
+    <ul class="nav-links">
+        <li><a href="timetable.html">Time Table</a></li>
+        <li class="center"><a href="status.html">Status</a></li>
+        <li class="forward"><a href="leave.html">Leave</a></li>
+    </ul>
+    <div class="greeting"></div>
+    <p class="greeting">Welcome, <span id="username-display"></span>!</p>
+
+    <div class="status-container">
+        <h2>Overall Attendance</h2>
+        <div class="overall-container">
+            <div class="chart-container">
+                <canvas id="overallAttendanceChart"></canvas>
+                <div class="percentage" id="overallAttendanceText">0%</div>
+            </div>
+        </div>
+    </div>
+    <div class="status-container">
+        <h2>Subject-wise Attendance</h2>
+        <div class="subjects-wrapper">
+            <div class="subject-container">
+                <h3>Network Security</h3>
+                <div class="chart-container">
+                    <canvas id="mathChart"></canvas>
+                    <div class="percentage" id="mathText">0%</div>
+                </div>
+            </div>
+            <div class="subject-container">
+                <h3>Artificial Intelligence</h3>
+                <div class="chart-container">
+                    <canvas id="physicsChart"></canvas>
+                    <div class="percentage" id="physicsText">0%</div>
+                </div>
+            </div>
+            <div class="subject-container">
+                <h3>Mobile Application Development</h3>
+                <div class="chart-container">
+                    <canvas id="chemistryChart"></canvas>
+                    <div class="percentage" id="chemistryText">0%</div>
+                </div>
+            </div>
+            <div class="subject-container">
+                <h3>Microprocessor</h3>
+                <div class="chart-container">
+                    <canvas id="englishChart"></canvas>
+                    <div class="percentage" id="englishText">0%</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

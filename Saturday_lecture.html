@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance Checker</title>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+        body { background: #fff; text-align: center; }
+
+        /* Header Styling */
+        .header {
+            position: relative;
+            background: -webkit-linear-gradient(left, #003366, #004080, #0059b3, #0073e6);
+            padding: 15px 0;
+            font-size: 24px;
+            font-weight: 600;
+            -webkit-background-clip: text;
+            color: transparent;
+            box-shadow: 0 5px 10px rgba(0,0,0,0.2);
+            animation: slideDown 1s ease-in-out forwards;
+        }
+
+        .header-buttons, .header-buttons-right {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            gap: 15px;
+        }
+        .header-buttons { left: 10px; }
+        .header-buttons-right { right: 10px; }
+
+        .header-buttons button, .header-buttons-right button {
+            background: #002F6C;
+            border: none;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            padding: 10px 15px;
+            border-radius: 10px;
+        }
+        .header-buttons button:hover, .header-buttons-right button:hover {
+            background: #004080;
+        }
+
+        /* Navigation Bar */
+        .nav-links {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            width: 100%;
+            background: -webkit-linear-gradient(left, #003366, #004080, #0059b3, #0073e6);
+            padding: 20px 0;
+            box-shadow: 0 5px 10px rgba(0,0,0,0.2);
+        }
+        .nav-links li { list-style: none; }
+        .nav-links li a {
+            color: #fff;
+            font-size: 20px;
+            font-weight: 500;
+            padding: 6px 15px;
+            text-decoration: none;
+        }
+        .nav-links li a:hover { text-decoration: underline; }
+
+        /* Subject Dropdown */
+        .subject-container { margin: 20px; }
+        select {
+            padding: 10px;
+            font-size: 18px;
+            border: 2px solid #004080;
+            border-radius: 5px;
+        }
+
+        /* Table Styling */
+        table { width: 80%; margin: 20px auto; border-collapse: collapse; box-shadow: 0 5px 10px rgba(0,0,0,0.2); }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: center; }
+        th { background: #004080; color: white; }
+        .present { background: #c8e6c9; color: #2e7d32; }
+        .absent { background: #ffcdd2; color: #c62828; }
+
+        /* Summary Counts */
+        .summary-container {
+            margin-top: 20px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div class="header-buttons">
+            <button onclick="location.href='teacher_dashboard.html'">Home</button>
+            <button onclick="location.href='Monday_lab.html'">Lab Attendance</button>
+        </div>
+        <div class="header-buttons-right">
+            <button onclick="location.href='teacher_leave_history.html'">Leave History</button>
+            <button onclick="location.href='FirstPage.html'">Logout</button>
+        </div>
+        Welcome to AutoPresence
+    </div> 
+
+    <ul class="nav-links">
+        <li><a href="Monday_lecture.html">Monday</a></li>
+        <li><a href="Tuesday_lecture.html">Tuesday</a></li>
+        <li><a href="Wednesday_lecture.html">Wednesday</a></li>
+        <li><a href="Thursdaylecture.html">Thursday</a></li>
+        <li><a href="Friday_lecture.html">Friday</a></li>
+        <li><a href="Saturday_lecture.html">Saturday</a></li>
+    </ul>
+
+    <div class="subject-container">
+        <label for="subjectSelect">Select Subject: </label>
+        <select id="subjectSelect" onchange="checkAttendance()">
+            <option value="MP-FS1">Mobile Application Development 1 - (MAD)</option>
+            <option value="MP-FS2">Mobile Application Development 2 - (MAD)</option>
+        </select>
+    </div>
+
+    <h2>Lecture Attendance</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Student Name</th>
+                <th>Attendance Time</th>
+                <th>Attendance Status</th>
+            </tr>
+        </thead>
+        <tbody id="attendanceTable">
+            <!-- Attendance data will be inserted here -->
+        </tbody>
+    </table>
+
+    <div class="summary-container">
+        Total Students: <span id="totalStudents">0</span> |
+        Total Present: <span id="totalPresent">0</span>
+    </div>
+
+    <script>
+        // ✅ Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyCGiBeeTdmkRvjSXnjrmZp091w055lThMI",
+            authDomain: "autopresence-b9594.firebaseapp.com",
+            projectId: "autopresence-b9594",
+            storageBucket: "autopresence-b9594.firebasestorage.app",
+            messagingSenderId: "139292140260",
+            appId: "1:139292140260:web:664258705e59f7ce7782f1"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        const studentsToCheck = ["Manasvi Trivedi","Aayushi Soni","Kaavyaa Sagar","Tisha Raval","Hetvi Suthar","Hitarth Thombare","Maitri Chavan","Anushree Chavda","Rudra Parmar","Diya Mistry","Aniruddh Rathod","Pranjal Rana","Vikas Rajput","Krish Patel","Mann Patel","Himani Prajapati","Karnik Purani","Pari Darji","Tirth Gandhi","Khanak Hathi","Hetanshi Jadhav","Trupti More","Vasu Navadiya","Dhvani Parmar","Aeshaben Patel","Krisha Kharva"];
+        function formatTime(firebaseTimestamp) {
+            if (!firebaseTimestamp || !firebaseTimestamp.toDate) return "N/A";
+            const date = firebaseTimestamp.toDate();
+            let hours = date.getHours();
+            let minutes = date.getMinutes();
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12 || 12;
+            minutes = minutes < 10 ? '0' + minutes : minutes;
+            return `${hours}:${minutes} ${ampm}`;
+        }
+
+        function checkAttendance() {
+            const selectedSubject = document.getElementById("subjectSelect").value;
+            const tableBody = document.getElementById("attendanceTable");
+            tableBody.innerHTML = "";
+        
+            db.collection("lecture_attendance")
+                .where("lectureName", "==", selectedSubject)
+                .get()
+                .then(querySnapshot => {
+                    let attendanceRecords = [];
+                    let totalPresent = 0;
+        
+                    querySnapshot.forEach(doc => {
+                        const data = doc.data();
+                        
+                        // Debugging: Log the fetched data to check for missing fields
+                        console.log("Fetched Document:", data);
+        
+                        if (!data.studentName) {
+                            console.warn("❗ Missing studentName in document:", doc.id, data);
+                        } else {
+                            attendanceRecords.push(data);
+                        }
+                    });
+        
+                    studentsToCheck.forEach(studentName => {
+                        const studentRecords = attendanceRecords.filter(att => 
+                            att.studentName && att.studentName.trim().toLowerCase() === studentName.trim().toLowerCase()
+                        );
+        
+                        studentRecords.sort((a, b) => b.timestamp.seconds - a.timestamp.seconds);
+        
+                        const latestRecord = studentRecords.length > 0 ? studentRecords[0] : null;
+                        const isPresent = latestRecord !== null;
+                        if (isPresent) totalPresent++;
+        
+                        const row = `<tr>
+                            <td>${studentName}</td>
+                            <td>${isPresent ? formatTime(latestRecord.timestamp) : "N/A"}</td>
+                            <td class="${isPresent ? 'present' : 'absent'}">${isPresent ? 'Present' : 'Absent'}</td>
+                        </tr>`;
+                        tableBody.innerHTML += row;
+                    });
+        
+                    document.getElementById("totalStudents").innerText = studentsToCheck.length;
+                    document.getElementById("totalPresent").innerText = totalPresent;
+                })
+                .catch(error => {
+                    console.error("🔥 Error fetching attendance:", error);
+                });
+        }
+        
+
+        window.onload = checkAttendance;
+    </script>
+
+</body>
+</html>
